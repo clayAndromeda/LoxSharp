@@ -74,9 +74,30 @@ public class Scanner
             case '\n':
                 line++; // 改行
                 break;
+            
+            case '"': ScanString(); break;
 
             default: Lox.Error(line, "Unexpected character."); break;
         }
+    }
+
+    private void ScanString()
+    {
+        while (Peek() != '"' && !IsAtEnd())
+        {
+            if (Peek() == '\n') line++;
+            Advance();
+        }
+
+        if (IsAtEnd())
+        {
+            Lox.Error(line, "Unterminated string."); // 文字列が終端していない
+            return;
+        }
+
+        Advance(); // 右側の引用ふを消費する
+        // 左右の引用符を切り捨てた残りの文字列をSTRINGトークンとして追加
+        AddToken(TokenType.STRING, _source.Substring(start + 1, current - 1));
     }
 
     private char Peek()
@@ -97,7 +118,6 @@ public class Scanner
 
     private char Advance()
     {
-        // まずは、すべてのトークンは1文字で構成されると仮定して実装する
         return _source[current++];
     }
 
